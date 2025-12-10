@@ -18,6 +18,12 @@ export default function Home() {
     return pasteData;
   };
 
+    const sortedList = pasteList
+    ? [...pasteList].sort(
+        (a, b) => new Date(b.$updatedAt) - new Date(a.$updatedAt)
+      )
+    : [];
+
   return (
     <div className="min-h-screen ">
       <div className="px-4 sm:px-6 lg:px-8 py-8">
@@ -26,7 +32,7 @@ export default function Home() {
           <CreatePaste fetchData={fetchPastes} onCreate={handleCreatePaste} user={user} />
           
           <div className="lg:col-span-1">
-            <RecentPastes pasteList={pasteList} loading={loading} />
+            <RecentPastes pasteList={sortedList} loading={loading} fetchData={fetchPastes}/>
           </div>
         </div>
       </div>

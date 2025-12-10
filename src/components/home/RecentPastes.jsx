@@ -7,10 +7,19 @@ import { useNavigate } from "react-router-dom";
 import PasteCard from "../common/PasteCard";
 import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "react-toastify";
+import { useState } from "react";
+import DeleteConfirmModal from "../DeleteConfirmModal ";
+import service from "../../appwrite/config";
+// import DeleteConfirmModal from "../common/DeleteConfirmModal";
 
-function RecentPastes({ pasteList, loading }) {
+function RecentPastes({ pasteList, loading, fetchData }) {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  console.log(pasteList);
+  
+
+  const [deleteId, setDeleteId] = useState(null);
 
   const handleViewAll = () => {
     if (!user) {
@@ -20,6 +29,23 @@ function RecentPastes({ pasteList, loading }) {
     navigate("/pastes");
   };
 
+  const handleDelete = (id) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    console.log("Deleting paste:", deleteId);
+    try {
+      await service.deleteCodePastes(deleteId);
+      toast.success("Paste deleted successfully!");
+      fetchData()
+    } catch (error) {
+      toast.error("Failed to delete paste");
+    }
+
+    setDeleteId(null);
+  };
+
   return (
     <Card>
       <div className="flex items-center justify-between mb-6">
@@ -27,6 +53,7 @@ function RecentPastes({ pasteList, loading }) {
           <Clock className="w-5 h-5 mr-2 text-blue-400" />
           Recent Pastes
         </h3>
+
         <Button
           onClick={handleViewAll}
           className="bg-transparent text-blue-400 hover:text-blue-300 text-sm font-medium"
@@ -44,10 +71,17 @@ function RecentPastes({ pasteList, loading }) {
             LANGUAGES={LANGUAGES}
             onView={(id) => navigate(`/pastedCode/${id}`)}
             onEdit={(id) => navigate(`/pastedCode/${id}?edit=true`)}
-            onDelete={(id) => console.log("Delete paste", id)}
+            onDelete={handleDelete}
           />
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        onConfirm={confirmDelete}
+      />
     </Card>
   );
 }

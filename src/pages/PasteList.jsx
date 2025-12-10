@@ -1,14 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import PasteCard from "../components/common/PasteCard";
 import Loader from "../components/Loader";
 import useFetchPastes from "../hooks/useFetchPastes";
 import { LANGUAGES } from "../utils/Languages";
+import service from "../appwrite/config";
+import { toast } from "react-toastify";
+import DeleteConfirmModal from "../components/DeleteConfirmModal ";
 
 export default function PasteList() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [deleteId, setDeleteId] = useState(null);
 
   const {
     data: pasteList,
@@ -20,6 +24,29 @@ export default function PasteList() {
   useEffect(() => {
     fetchPastes();
   }, [user?.$id]);
+
+  const sortedList = pasteList
+    ? [...pasteList].sort(
+        (a, b) => new Date(b.$updatedAt) - new Date(a.$updatedAt)
+      )
+    : [];
+
+  const handleDelete = (id) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    console.log("Deleting paste:", deleteId);
+    try {
+      await service.deleteCodePastes(deleteId);
+      toast.success("Paste deleted successfully!");
+      fetchPastes();
+    } catch (error) {
+      toast.error("Failed to delete paste");
+    }
+
+    setDeleteId(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -53,11 +80,11 @@ export default function PasteList() {
           {!loading && !error && pasteList.length > 0 && (
             <div className="space-y-3 max-h-[calc(100vh-250px)] grid grid-cols-2 gap-x-3 overflow-y-auto pr-2">
               <PasteCard
-                pasteList={pasteList}
+                pasteList={sortedList}
                 LANGUAGES={LANGUAGES}
                 onView={(id) => navigate(`/pastedCode/${id}`)}
                 onEdit={(id) => navigate(`/pastedCode/${id}?edit=true`)}
-                onDelete={(id) => console.log("Delete paste", id)}
+                onDelete={handleDelete}
               />
             </div>
           )}
@@ -70,6 +97,13 @@ export default function PasteList() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }
