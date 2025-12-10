@@ -14,7 +14,7 @@ import UserProfile from "./pages/UserProfile";
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
-  if (loading) return <div><Loader /> </div>;
+  
 
   return user ? children : <Navigate to="/login" />;
 }
