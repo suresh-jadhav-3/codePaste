@@ -41,7 +41,7 @@ export default function Navbar() {
 
           {/* Menu */}
           {user ? (
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="flex items-center space-x-4">
               <NavLink
                 to="/"
                 className={({ isActive }) =>
@@ -105,7 +105,7 @@ export default function Navbar() {
             </div>
           ) : (
             // Show Login / Sign Up buttons for guests
-            <div className="hidden md:flex space-x-4">
+            <div className="flex space-x-4">
               <Button
                 onClick={() => navigate("/login")}
                 className="text-white bg-blue-600 hover:bg-blue-700 "
